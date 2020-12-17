@@ -20,7 +20,6 @@ import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
     private lateinit var myAdapter: MainAdapter
-    var scroll: String = "top"
     lateinit var dataList: ArrayList<SearchImageResponse.Documents>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +50,6 @@ class MainActivity : AppCompatActivity() {
                     if (check) {
                         if (pagenum > 1) {
                             pagenum--
-                            scroll = "top"
                             retrofitServicec(text, pagenum, recyclerView)
                         }
                     }
@@ -60,7 +58,6 @@ class MainActivity : AppCompatActivity() {
                     if (check) {
                         if (pagenum < 50) {
                             pagenum++
-                            scroll = "end"
                             retrofitServicec(text, pagenum, recyclerView)
                         }
                     }
@@ -141,11 +138,6 @@ class MainActivity : AppCompatActivity() {
                                 startActivity(nextIntent)
                             }
                         }
-//                        if (scroll == "top") {
-//                            recyclerView.smoothScrollToPosition(26)
-//                        } else {
-//                            recyclerView.smoothScrollToPosition(0)
-//                        }
                     }
                 }
             })
