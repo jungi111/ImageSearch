@@ -122,11 +122,11 @@ class MainActivity : AppCompatActivity() {
                         myAdapter.itemClick = object : MainAdapter.ItemClick {
                             override fun onClick(view: View, position: Int) {
                                 val imageurl =
-                                    response.body()!!.documents.get(position).imageUrl.trim()
+                                    dataList.get(position).imageUrl.trim()
                                 val datetime =
-                                    response.body()!!.documents.get(position).datetime
+                                    dataList.get(position).datetime
                                 val displaysitename =
-                                    response.body()!!.documents.get(position).displaySiteName
+                                    dataList.get(position).displaySiteName
 
                                 val nextIntent = Intent(
                                     applicationContext,
