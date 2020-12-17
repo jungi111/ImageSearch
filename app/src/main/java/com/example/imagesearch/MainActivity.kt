@@ -20,7 +20,8 @@ import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
     private lateinit var myAdapter: MainAdapter
-    var scroll : String = "top"
+    var scroll: String = "top"
+    lateinit var dataList: ArrayList<SearchImageResponse.Documents>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,30 +34,34 @@ class MainActivity : AppCompatActivity() {
         var text: String = ""
         var pagenum: Int = 1
         var check: Boolean = false
+        dataList = ArrayList()
 
         val layoutManager = GridLayoutManager(applicationContext, 3)
         recyclerView.layoutManager = layoutManager
         recyclerView.addItemDecoration(itemDecoration())
         recyclerView.setHasFixedSize(true)
 
+        myAdapter = MainAdapter(applicationContext, dataList)
+        recyclerView.adapter = myAdapter
+
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 if (!recyclerView.canScrollVertically(-1)) {
                     if (check) {
-                        if (pagenum > 1){
+                        if (pagenum > 1) {
                             pagenum--
                             scroll = "top"
-                            retrofitServicec(text, pagenum, textLayout, recyclerView)
+                            retrofitServicec(text, pagenum, recyclerView)
                         }
                     }
                     check = false
                 } else if (!recyclerView.canScrollVertically(1)) {
                     if (check) {
-                        if (pagenum < 50){
+                        if (pagenum < 50) {
                             pagenum++
                             scroll = "end"
-                            retrofitServicec(text, pagenum, textLayout, recyclerView)
+                            retrofitServicec(text, pagenum, recyclerView)
                         }
                     }
                     check = false
@@ -79,8 +84,15 @@ class MainActivity : AppCompatActivity() {
                 val string: String = s.toString()
                 Handler().postDelayed({
                     text = editText.text.toString()
+
                     if (string.equals(text) == true) {
-                        retrofitServicec(text, pagenum, textLayout, recyclerView)
+                        retrofitServicec(text, pagenum, recyclerView)
+                    }
+                    if (s.toString().length == 0) {
+                        textLayout.visibility = View.VISIBLE
+                        dataList.clear()
+                    } else {
+                        textLayout.visibility = View.GONE
                     }
                 }, 1000)
             }
@@ -90,7 +102,6 @@ class MainActivity : AppCompatActivity() {
     private fun retrofitServicec(
         text: String,
         pagenum: Int,
-        textLayout: LinearLayout,
         recyclerView: RecyclerView
     ) {
         SearchRetrofit.getService().getSearchImage(searchText = text, page = pagenum)
@@ -99,43 +110,42 @@ class MainActivity : AppCompatActivity() {
                 override fun onFailure(call: Call<SearchImageResponse>, t: Throwable) {
                     Log.w("TAG", "error: " + t.message);
                 }
+
                 override fun onResponse(
                     call: Call<SearchImageResponse>,
                     response: Response<SearchImageResponse>
                 ) {
                     if (response.isSuccessful) {
-                        if (response.body()!!.meta.totalCount == 0){
-                            textLayout.visibility = View.VISIBLE
-                        }else{
-                            textLayout.visibility = View.GONE
+                        for (str in response.body()!!.documents) {
+                            dataList.add(str)
+                        }
+                        myAdapter.notifyDataSetChanged()
 
-                            myAdapter = MainAdapter(applicationContext, response.body()!!)
-                            myAdapter.itemClick = object : MainAdapter.ItemClick {
-                                override fun onClick(view: View, position: Int) {
-                                    val imageurl =
-                                        response.body()!!.documents.get(position).imageUrl.trim()
-                                    val datetime =
-                                        response.body()!!.documents.get(position).datetime
-                                    val displaysitename =
-                                        response.body()!!.documents.get(position).displaySiteName
+//                        myAdapter = MainAdapter(applicationContext, response.body()!!)
+                        myAdapter.itemClick = object : MainAdapter.ItemClick {
+                            override fun onClick(view: View, position: Int) {
+                                val imageurl =
+                                    response.body()!!.documents.get(position).imageUrl.trim()
+                                val datetime =
+                                    response.body()!!.documents.get(position).datetime
+                                val displaysitename =
+                                    response.body()!!.documents.get(position).displaySiteName
 
-                                    val nextIntent = Intent(
-                                        applicationContext,
-                                        ImageActivity::class.java
-                                    )
-                                    nextIntent.putExtra("imageurl", imageurl)
-                                    nextIntent.putExtra("datetime", datetime)
-                                    nextIntent.putExtra("displaysitename", displaysitename)
-                                    startActivity(nextIntent)
-                                }
-                            }
-                            recyclerView.adapter = myAdapter
-                            if (scroll == "top"){
-                                recyclerView.smoothScrollToPosition(26)
-                            }else{
-                                recyclerView.smoothScrollToPosition(0)
+                                val nextIntent = Intent(
+                                    applicationContext,
+                                    ImageActivity::class.java
+                                )
+                                nextIntent.putExtra("imageurl", imageurl)
+                                nextIntent.putExtra("datetime", datetime)
+                                nextIntent.putExtra("displaysitename", displaysitename)
+                                startActivity(nextIntent)
                             }
                         }
+//                        if (scroll == "top") {
+//                            recyclerView.smoothScrollToPosition(26)
+//                        } else {
+//                            recyclerView.smoothScrollToPosition(0)
+//                        }
                     }
                 }
             })

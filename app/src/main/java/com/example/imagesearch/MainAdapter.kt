@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.image.model.data.SearchImageResponse
 import com.squareup.picasso.Picasso
 
-class MainAdapter(val context: Context, val imgList: SearchImageResponse) :
+class MainAdapter(val context: Context, val imgList: ArrayList<SearchImageResponse.Documents>) :
     RecyclerView.Adapter<MainAdapter.Holder>() {
 
     interface ItemClick{
@@ -24,11 +24,11 @@ class MainAdapter(val context: Context, val imgList: SearchImageResponse) :
     }
 
     override fun getItemCount(): Int {
-        return imgList.documents.size
+        return imgList.size
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(imgList.documents[position], context)
+        holder.bind(imgList[position], context)
         if (itemClick != null){
             holder.itemView.setOnClickListener { v ->
                 itemClick!!.onClick(v,position)
